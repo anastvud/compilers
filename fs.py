@@ -45,7 +45,8 @@ def markdown_to_latex(markdown):
     """Convert an entire Markdown document to a standalone LaTeX document."""
     latex_lines = []
     lines = markdown.splitlines()
-    in_list = False
+    list_stack = []  # Keeps track of nested list levels
+    current_indent = 0
 
     # Add LaTeX preamble
     latex_lines.append(r"\documentclass{article}")
@@ -57,25 +58,54 @@ def markdown_to_latex(markdown):
     latex_lines.append(r"\begin{document}")
 
     for line in lines:
-        line = line.strip()
+        line = line.rstrip()
         if not line:
             continue  # Skip empty lines
 
-        # Handle list environment
-        if line.startswith('-') and not in_list:
-            latex_lines.append(r'\begin{itemize}')
-            in_list = True
-        elif not line.startswith('-') and in_list:
-            latex_lines.append(r'\end{itemize}')
-            in_list = False
+        # Determine the current indentation level
+        stripped_line = line.lstrip()
+        indent_level = len(line) - len(stripped_line)
+        
+        # Handle list environments
+        if stripped_line.startswith('-'):
+            if not list_stack or indent_level > current_indent:
+                # Start a new nested list
+                latex_lines.append(r'\begin{itemize}')
+                list_stack.append('itemize')
+            elif indent_level < current_indent:
+                # Close lists until we match the current indentation
+                while list_stack and indent_level < current_indent:
+                    latex_lines.append(r'\end{' + list_stack.pop() + '}')
+                    current_indent -= 2
+            current_indent = indent_level
+            item_text = parse_inline_elements(stripped_line[1:].strip())
+            latex_lines.append(r'\item ' + item_text)
+        elif stripped_line.startswith('1.') or stripped_line.startswith('1)'):
+            if not list_stack or indent_level > current_indent:
+                # Start a new ordered list
+                latex_lines.append(r'\begin{enumerate}')
+                list_stack.append('enumerate')
+            elif indent_level < current_indent:
+                # Close lists until we match the current indentation
+                while list_stack and indent_level < current_indent:
+                    latex_lines.append(r'\end{' + list_stack.pop() + '}')
+                    current_indent -= 2
+            current_indent = indent_level
+            item_text = parse_inline_elements(stripped_line[2:].strip())
+            latex_lines.append(r'\item ' + item_text)
+        else:
+            # Close all open lists if a non-list item is encountered
+            while list_stack:
+                latex_lines.append(r'\end{' + list_stack.pop() + '}')
+            current_indent = 0
 
-        # Parse the line and add the LaTeX translation
-        latex_line = parse_line(line)
-        latex_lines.append(latex_line)
+            # Parse and add non-list content
+            latex_line = parse_line(line)
+            latex_lines.append(latex_line)
 
-    # Close any remaining open list environment
-    if in_list:
-        latex_lines.append(r'\end{itemize}')
+    # Close any remaining open lists
+    while list_stack:
+        latex_lines.append(r'\end{' + list_stack.pop() + '}')
 
     # Add LaTeX document end
     latex_lines.append(r"\end{document}")
@@ -84,11 +114,7 @@ def markdown_to_latex(markdown):
 
 
 
-# markdown_text = """
 
-# """
-
-# File paths
 input_file = 'example.md'   # Replace with your Markdown file path
 output_file = 'output.tex'  # Replace with your desired LaTeX file path
 
