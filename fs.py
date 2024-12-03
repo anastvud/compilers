@@ -80,7 +80,7 @@ def markdown_to_latex(markdown):
             current_indent = indent_level
             item_text = parse_inline_elements(stripped_line[1:].strip())
             latex_lines.append(r'\item ' + item_text)
-        elif stripped_line.startswith('1.') or stripped_line.startswith('1)'):
+        elif re.match(r'^\d+[\.\)]', stripped_line):
             if not list_stack or indent_level > current_indent:
                 # Start a new ordered list
                 latex_lines.append(r'\begin{enumerate}')
@@ -91,8 +91,21 @@ def markdown_to_latex(markdown):
                     latex_lines.append(r'\end{' + list_stack.pop() + '}')
                     current_indent -= 2
             current_indent = indent_level
-            item_text = parse_inline_elements(stripped_line[2:].strip())
-            latex_lines.append(r'\item ' + item_text)
+
+            # Process the current and subsequent lines as part of the ordered list
+            while re.match(r'^\d+[\.\)]', stripped_line):
+                # Extract the text after the number and period/parenthesis
+                item_text = parse_inline_elements(stripped_line.split(maxsplit=1)[1].strip())
+                latex_lines.append(r'\item ' + item_text)
+                
+                # Move to the next line
+                next_index = lines.index(line) + 1
+                if next_index < len(lines):
+                    line = lines[next_index].rstrip()
+                    stripped_line = line.lstrip()
+                    indent_level = len(line) - len(stripped_line)
+                else:
+                    break
         else:
             # Close all open lists if a non-list item is encountered
             while list_stack:
