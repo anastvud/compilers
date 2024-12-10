@@ -7,12 +7,14 @@ This is an example of a **Markdown document**. It contains *italic text*, **bold
 Here is an unordered list:
 - Item 1 with some **bold** text.
 - Item 2 with a [link](https://example.com).
-- Item 3 with both *italic* and **bold** text.
+- Item 3 with both *italic and **bold** text.
 
 Here is an ordered list:
-1. Step 1: Write Markdown.
-2. Step 2: Parse it.
-3. Step 3: Convert it to **LaTeX**.
+1. Write Markdown.
+2. Parse it.
+3. Convert it to **LaTeX**.
+4. Hello
+5. Here
 
 ## Section 2: Nested Lists
 

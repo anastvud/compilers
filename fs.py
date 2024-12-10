@@ -92,12 +92,22 @@ def markdown_to_latex(markdown):
                     current_indent -= 2
             current_indent = indent_level
 
+            # Initialize counters for ordered list items
+            item_count = 0
+            last_number = 0
+            ordered_list_items = []
+
             # Process the current and subsequent lines as part of the ordered list
             while re.match(r'^\d+[\.\)]', stripped_line):
-                # Extract the text after the number and period/parenthesis
-                item_text = parse_inline_elements(stripped_line.split(maxsplit=1)[1].strip())
-                latex_lines.append(r'\item ' + item_text)
+                # Extract the number and text after the number and period/parenthesis
+                number, item_text = re.split(r'[\.\)]', stripped_line, maxsplit=1)
+                item_text = parse_inline_elements(item_text.strip())
+                ordered_list_items.append(r'\item ' + item_text)
                 
+                # Update counters
+                item_count += 1
+                last_number = number.strip()
+
                 # Move to the next line
                 next_index = lines.index(line) + 1
                 if next_index < len(lines):
@@ -106,6 +116,9 @@ def markdown_to_latex(markdown):
                     indent_level = len(line) - len(stripped_line)
                 else:
                     break
+
+            if (int(item_count) == int(last_number)):
+                latex_lines.extend(ordered_list_items)
         else:
             # Close all open lists if a non-list item is encountered
             while list_stack:
