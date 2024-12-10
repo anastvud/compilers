@@ -55,6 +55,9 @@ def parse_inline_elements(text):
     text = italic_pattern.sub(r'\\textit{\1}', text)
     text = link_pattern.sub(r'\\href{\2}{\1}', text)
 
+    # Handle inline code
+    text = code_pattern.sub(r'\\texttt{\1}', text)
+
     return text
 
 
