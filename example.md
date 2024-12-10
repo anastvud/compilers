@@ -28,4 +28,4 @@ Here is a nested list:
 
 ## Section 3: Code and Special Characters
 
-Here is a simple inline code example: `print("Hello, world!")`. You can also include special characters like `#`, `*`, and `_` using backticks.
+Here is a simple inline code example: `print("Hello, world!")`. You can also include special characters like #, *, and _ using backticks.

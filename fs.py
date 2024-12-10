@@ -34,6 +34,23 @@ def parse_line(line):
 
 
 def parse_inline_elements(text):
+    # Escape special LaTeX characters
+    special_chars = {
+        '#': r'\#',
+        '$': r'\$',
+        '%': r'\%',
+        '&': r'\&',
+        '_': r'\_',
+        '{': r'\{',
+        '}': r'\}',
+        '~': r'\textasciitilde{}',
+        '^': r'\textasciicircum{}',
+        '*': r'\textasteriskcentered{}'
+    }
+    for char, replacement in special_chars.items():
+        text = text.replace(char, replacement)
+
+    # Handle inline formatting
     text = bold_pattern.sub(r'\\textbf{\1}', text)
     text = italic_pattern.sub(r'\\textit{\1}', text)
     text = link_pattern.sub(r'\\href{\2}{\1}', text)
