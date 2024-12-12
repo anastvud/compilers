@@ -6,6 +6,8 @@ italic_pattern = re.compile(r'\*(.*?)\*')
 list_item_pattern = re.compile(r'^-\s+(.*)')
 link_pattern = re.compile(r'\[(.*?)\]\((.*?)\)')
 code_pattern = re.compile(r'`([^`]+)`')
+math_inline_pattern = re.compile(r'\$(.*?)\$')  # Inline math: $...$
+math_block_pattern = re.compile(r'^\$\$(.*?)\$\$$', re.DOTALL)  # Block math: $$...$$
 
 
 def read_markdown_file(file_path):
@@ -30,33 +32,21 @@ def parse_line(line):
         item_text = parse_inline_elements(list_match.group(1))
         return f"\\item {item_text}"
 
+    math_block_match = math_block_pattern.match(line)
+    if math_block_match:
+        return r'\[' + math_block_match.group(1) + r'\]'
+
     return parse_inline_elements(line)
 
 
 def parse_inline_elements(text):
-    # Escape special LaTeX characters
-    special_chars = {
-        '#': r'\#',
-        '$': r'\$',
-        '%': r'\%',
-        '&': r'\&',
-        '_': r'\_',
-        '{': r'\{',
-        '}': r'\}',
-        '~': r'\textasciitilde{}',
-        '^': r'\textasciicircum{}',
-        '*': r'\textasteriskcentered{}'
-    }
-    for char, replacement in special_chars.items():
-        text = text.replace(char, replacement)
 
     # Handle inline formatting
     text = bold_pattern.sub(r'\\textbf{\1}', text)
     text = italic_pattern.sub(r'\\textit{\1}', text)
     text = link_pattern.sub(r'\\href{\2}{\1}', text)
-
-    # Handle inline code
     text = code_pattern.sub(r'\\texttt{\1}', text)
+    text = math_inline_pattern.sub(r'$\1$', text)
 
     return text
 

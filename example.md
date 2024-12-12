@@ -7,7 +7,7 @@ This is an example of a **Markdown document**. It contains *italic text*, **bold
 Here is an unordered list:
 - Item 1 with some **bold** text.
 - Item 2 with a [link](https://example.com).
-- Item 3 with both *italic and **bold** text.
+- Item 3 with both *italic* and **bold** text.
 
 Here is an ordered list:
 1. Write Markdown.
@@ -24,8 +24,27 @@ Here is a nested list:
   - Child Item 1.2 with a [link](https://nested.com)
 - Parent Item 2
   - Child Item 2.1
-  - Child Item 2.2 with *italic text.
+  - Child Item 2.2 with *italic* text.
 
-## Section 3: Code and Special Characters
+## Section 3: Code 
 
-Here is a simple inline code example: `print("Hello, world!")`. You can also include special characters like #, *, and _ using backticks.
+Here is a simple inline code example: `print("Hello, world!")`.
+
+```
+def greet(name):
+    """
+    This function greets the person whose name is passed as a parameter.
+    """
+    print(f"Hello, {name}!")
+
+# Example usage
+greet("Alice")
+```
+
+## Section 4: Math formulas
+Here is an inline math formula: $E = mc^2$.
+
+Here is a block math formula:
+$$
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+$$
