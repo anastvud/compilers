@@ -6,8 +6,8 @@ italic_pattern = re.compile(r'\*(.*?)\*')
 list_item_pattern = re.compile(r'^-\s+(.*)')
 link_pattern = re.compile(r'\[(.*?)\]\((.*?)\)')
 code_pattern = re.compile(r'`([^`]+)`')
-math_inline_pattern = re.compile(r'\$(.*?)\$')  # Inline math: $...$
-math_block_pattern = re.compile(r'^\$\$(.*?)\$\$$', re.DOTALL)  # Block math: $$...$$
+math_inline_pattern = re.compile(r'\$(.*?)\$')
+math_block_pattern = re.compile(r'^\$\$(.*?)\$\$$', re.DOTALL)
 
 
 def read_markdown_file(file_path):
@@ -57,6 +57,7 @@ def markdown_to_latex(markdown):
     lines = markdown.splitlines()
     list_stack = []  # Keeps track of nested list levels
     current_indent = 0
+    inside_code_block = False  # Tracks whether we're inside a code block
 
     # Add LaTeX preamble
     latex_lines.append(r"\documentclass{article}")
@@ -65,17 +66,39 @@ def markdown_to_latex(markdown):
     latex_lines.append(r"\usepackage{amsmath}")   # For mathematical symbols (optional)
     latex_lines.append(r"\usepackage{amssymb}")   # For symbols (optional)
     latex_lines.append(r"\usepackage{graphicx}")  # For images (if needed later)
+    latex_lines.append(r"\usepackage{listings}")  # For code blocks
+    latex_lines.append(r"\lstset{basicstyle=\ttfamily\small, breaklines=true, frame=single}")  # Code block style
     latex_lines.append(r"\begin{document}")
 
     for line in lines:
         line = line.rstrip()
         if not line:
+            if inside_code_block:
+                latex_lines.append("")  # Preserve blank lines inside code blocks
             continue  # Skip empty lines
 
         # Determine the current indentation level
         stripped_line = line.lstrip()
         indent_level = len(line) - len(stripped_line)
         
+        # Handle code blocks
+        if stripped_line.startswith("```"):
+            if inside_code_block:
+                # Close the LaTeX code block
+                latex_lines.append(r'\end{lstlisting}')
+                inside_code_block = False
+            else:
+                # Start a new LaTeX code block
+                inside_code_block = True
+                latex_lines.append(r'\begin{lstlisting}')
+            continue
+
+        if inside_code_block:
+            # Add lines as-is to the code block
+            latex_lines.append(line)
+            continue
+
+
         # Handle list environments
         if stripped_line.startswith('-'):
             if not list_stack or indent_level > current_indent:
@@ -147,20 +170,3 @@ def markdown_to_latex(markdown):
     latex_lines.append(r"\end{document}")
 
     return '\n'.join(latex_lines)
-
-
-
-
-input_file = 'example.md'   # Replace with your Markdown file path
-output_file = 'output.tex'  # Replace with your desired LaTeX file path
-
-# Read Markdown input
-markdown_text = read_markdown_file(input_file)
-
-# Convert Markdown to LaTeX
-latex_output = markdown_to_latex(markdown_text)
-
-# Write LaTeX output to file
-write_latex_file(output_file, latex_output)
-
-print(f"LaTeX content has been written to {output_file}")
